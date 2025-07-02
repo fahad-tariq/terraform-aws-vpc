@@ -28,6 +28,8 @@ locals {
 resource "aws_vpc" "this" {
   count = local.create_vpc ? 1 : 0
 
+  region = var.region
+
   cidr_block          = var.use_ipam_pool ? null : var.cidr
   ipv4_ipam_pool_id   = var.ipv4_ipam_pool_id
   ipv4_netmask_length = var.ipv4_netmask_length
@@ -53,6 +55,8 @@ resource "aws_vpc" "this" {
 resource "aws_vpc_ipv4_cidr_block_association" "this" {
   count = local.create_vpc && length(var.secondary_cidr_blocks) > 0 ? length(var.secondary_cidr_blocks) : 0
 
+  region = var.region
+
   # Do not turn this into `local.vpc_id`
   vpc_id = aws_vpc.this[0].id
 
@@ -62,11 +66,15 @@ resource "aws_vpc_ipv4_cidr_block_association" "this" {
 resource "aws_vpc_block_public_access_options" "this" {
   count = local.create_vpc && length(keys(var.vpc_block_public_access_options)) > 0 ? 1 : 0
 
+  region = var.region
+
   internet_gateway_block_mode = try(var.vpc_block_public_access_options["internet_gateway_block_mode"], null)
 }
 
 resource "aws_vpc_block_public_access_exclusion" "this" {
   for_each = { for k, v in var.vpc_block_public_access_exclusions : k => v if local.create_vpc }
+
+  region = var.region
 
   vpc_id = try(each.value.exclude_vpc, false) ? local.vpc_id : null
 
@@ -99,6 +107,8 @@ resource "aws_vpc_block_public_access_exclusion" "this" {
 resource "aws_vpc_dhcp_options" "this" {
   count = local.create_vpc && var.enable_dhcp_options ? 1 : 0
 
+  region = var.region
+
   domain_name                       = var.dhcp_options_domain_name
   domain_name_servers               = var.dhcp_options_domain_name_servers
   ntp_servers                       = var.dhcp_options_ntp_servers
@@ -116,6 +126,8 @@ resource "aws_vpc_dhcp_options" "this" {
 resource "aws_vpc_dhcp_options_association" "this" {
   count = local.create_vpc && var.enable_dhcp_options ? 1 : 0
 
+  region = var.region
+
   vpc_id          = local.vpc_id
   dhcp_options_id = aws_vpc_dhcp_options.this[0].id
 }
@@ -130,6 +142,8 @@ locals {
 
 resource "aws_subnet" "public" {
   count = local.create_public_subnets && (!var.one_nat_gateway_per_az || local.len_public_subnets >= length(var.azs)) ? local.len_public_subnets : 0
+
+  region = var.region
 
   assign_ipv6_address_on_creation                = var.enable_ipv6 && var.public_subnet_ipv6_native ? true : var.public_subnet_assign_ipv6_address_on_creation
   availability_zone                              = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null

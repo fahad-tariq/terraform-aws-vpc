@@ -1666,3 +1666,18 @@ variable "putin_khuylo" {
   type        = bool
   default     = true
 }
+
+################################################################################
+# Enhanced Region Support (AWS Provider 6.0+)
+################################################################################
+
+variable "region" {
+  description = "AWS region override for VPC and associated resources. Uses enhanced region support from AWS Provider 6.0+. If not specified, uses the provider's default region"
+  type        = string
+  default     = null
+
+  validation {
+    condition = var.region == null || can(regex("^[a-z]{2}-[a-z]+-[0-9]{1}$|^us-gov-[a-z]+-[0-9]{1}$|^cn-[a-z]+-[0-9]{1}$", var.region))
+    error_message = "Region must be a valid AWS region format (e.g., us-east-1, eu-west-1, ap-southeast-2)."
+  }
+}

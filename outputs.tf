@@ -667,3 +667,12 @@ output "name" {
   description = "The name of the VPC specified as argument to this module"
   value       = var.name
 }
+
+################################################################################
+# Enhanced Region Support
+################################################################################
+
+output "region" {
+  description = "AWS region where VPC and associated resources are created (uses enhanced region support from AWS Provider 6.0+)"
+  value       = var.region
+}

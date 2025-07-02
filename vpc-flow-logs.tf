@@ -36,6 +36,8 @@ locals {
 resource "aws_flow_log" "this" {
   count = local.enable_flow_log ? 1 : 0
 
+  region = var.region
+
   log_destination_type       = var.flow_log_destination_type
   log_destination            = local.flow_log_destination_arn
   log_format                 = var.flow_log_log_format
@@ -65,6 +67,8 @@ resource "aws_flow_log" "this" {
 resource "aws_cloudwatch_log_group" "flow_log" {
   count = local.create_flow_log_cloudwatch_log_group ? 1 : 0
 
+  region = var.region
+
   name              = "${var.flow_log_cloudwatch_log_group_name_prefix}${local.flow_log_cloudwatch_log_group_name_suffix}"
   retention_in_days = var.flow_log_cloudwatch_log_group_retention_in_days
   kms_key_id        = var.flow_log_cloudwatch_log_group_kms_key_id
@@ -76,6 +80,8 @@ resource "aws_cloudwatch_log_group" "flow_log" {
 
 resource "aws_iam_role" "vpc_flow_log_cloudwatch" {
   count = local.create_flow_log_cloudwatch_iam_role ? 1 : 0
+
+  region = var.region
 
   name        = var.vpc_flow_log_iam_role_use_name_prefix ? null : var.vpc_flow_log_iam_role_name
   name_prefix = var.vpc_flow_log_iam_role_use_name_prefix ? "${var.vpc_flow_log_iam_role_name}-" : null
@@ -115,12 +121,16 @@ data "aws_iam_policy_document" "flow_log_cloudwatch_assume_role" {
 resource "aws_iam_role_policy_attachment" "vpc_flow_log_cloudwatch" {
   count = local.create_flow_log_cloudwatch_iam_role ? 1 : 0
 
+  region = var.region
+
   role       = aws_iam_role.vpc_flow_log_cloudwatch[0].name
   policy_arn = aws_iam_policy.vpc_flow_log_cloudwatch[0].arn
 }
 
 resource "aws_iam_policy" "vpc_flow_log_cloudwatch" {
   count = local.create_flow_log_cloudwatch_iam_role ? 1 : 0
+
+  region = var.region
 
   name        = var.vpc_flow_log_iam_policy_use_name_prefix ? null : var.vpc_flow_log_iam_policy_name
   name_prefix = var.vpc_flow_log_iam_policy_use_name_prefix ? "${var.vpc_flow_log_iam_policy_name}-" : null
